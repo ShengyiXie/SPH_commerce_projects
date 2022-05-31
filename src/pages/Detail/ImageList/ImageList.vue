@@ -1,8 +1,16 @@
 <template>
-  <div class="swiper-container">
+  <div class="swiper-container" ref="cur">
     <div class="swiper-wrapper">
-      <div class="swiper-slide" v-for="slide in skuImageList" :key="slide.id">
-        <img :src="slide.imgUrl" />
+      <div
+        class="swiper-slide"
+        v-for="(slide, index) in skuImageList"
+        :key="slide.id"
+      >
+        <img
+          :src="slide.imgUrl"
+          :class="{ active: currentIndex == index }"
+          @click="changeCurrentIndex(index)"
+        />
       </div>
     </div>
     <div class="swiper-button-next"></div>
@@ -11,11 +19,43 @@
 </template>
 
 <script>
+// 引包
 import Swiper from "swiper";
 
 export default {
   name: "ImageList",
+  data() {
+    return {
+      currentIndex: 0,
+    };
+  },
   props: ["skuImageList"],
+  watch: {
+    // 监听数据：可以保证数据一定ok，但是不能保证v-for遍历结构是否完事
+    skuImageList(newValue, oldValue) {
+      // $nextTick:在下次DOM更新循环结束之后执行延迟回调，可以保证dom已经存在页面上了
+      this.$nextTick(() => {
+        new Swiper(this.$refs.cur, {
+          // 显示几个
+          slidesPerView: 3,
+          // 切换的时候切几个
+          slidesPerGroup: 1,
+          // 如果需要前进后退按钮
+          navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+          },
+        });
+      });
+    },
+  },
+  methods: {
+    changeCurrentIndex(index) {
+      this.currentIndex = index;
+      // 通知兄弟组件zoom，当前的索引值为几
+      this.$bus.$emit("getIndex", this.currentIndex);
+    },
+  },
 };
 </script>
 
@@ -40,11 +80,6 @@ export default {
       display: block;
 
       &.active {
-        border: 2px solid #f60;
-        padding: 1px;
-      }
-
-      &:hover {
         border: 2px solid #f60;
         padding: 1px;
       }

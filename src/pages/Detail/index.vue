@@ -88,6 +88,12 @@
                   :class="{ active: spuSaleAttrValue.isChecked == 1 }"
                   v-for="spuSaleAttrValue in spuSaleAttr.spuSaleAttrValueList"
                   :key="spuSaleAttrValue.id"
+                  @click="
+                    changeActive(
+                      spuSaleAttrValue,
+                      spuSaleAttr.spuSaleAttrValueList
+                    )
+                  "
                 >
                   {{ spuSaleAttrValue.saleAttrValueName }}
                 </dd>
@@ -95,12 +101,23 @@
             </div>
             <div class="cartWrap">
               <div class="controls">
-                <input autocomplete="off" class="itxt" />
-                <a href="javascript:" class="plus">+</a>
-                <a href="javascript:" class="mins">-</a>
+                <input
+                  autocomplete="off"
+                  class="itxt"
+                  v-model="skuNum"
+                  @change="changeskuNum"
+                />
+                <a href="javascript:" class="plus" @click="skuNum++">+</a>
+                <a
+                  href="javascript:"
+                  class="mins"
+                  @click="skuNum > 1 ? skuNum-- : (skuNum = 1)"
+                  >-</a
+                >
               </div>
               <div class="add">
-                <a href="javascript:">加入购物车</a>
+                <!-- 再进行路由跳转到购物车界面前，点击加入购物车，先发送请求通知服务器，记录数据 -->
+                <a @click="addShopCar">加入购物车</a>
               </div>
             </div>
           </div>
@@ -345,6 +362,12 @@ import { mapGetters } from "vuex";
 
 export default {
   name: "Detail",
+  data() {
+    return {
+      // 购买产品个数,默认为1
+      skuNum: 1,
+    };
+  },
 
   components: {
     ImageList,
@@ -359,6 +382,45 @@ export default {
     // 给子组件zoom的数据,如果skuInfo是{}，那么skuImageList是undefined,undefined[0]会报错，所以||[]
     skuImageList() {
       return this.skuInfo.skuImageList || [];
+    },
+  },
+  methods: {
+    changeActive(spuSaleAttrValue, arr) {
+      // 遍历,把全部售卖属性的isChecked修改为不选中，再把点击的属性
+      arr.forEach((item) => {
+        item.isChecked = 0;
+      });
+      spuSaleAttrValue.isChecked = 1;
+    },
+    // input修改产品加入购物车的数量
+    changeskuNum(e) {
+      // 若输入的是字符串（=NaN）或者小于1或者存在小数
+      let value = e.target.value * 1;
+      if (isNaN(value) || value < 1) {
+        this.skuNum = 1;
+      } else {
+        this.skuNum = parseInt(value);
+      }
+    },
+    // 加入购物车的回调函数
+    async addShopCar() {
+      // 调用的是store-detail的addOrUpdateShopCart方法，await 等待Promise返回的结果
+      try {
+        await this.$store.dispatch("addOrUpdateShopCart", {
+          skuId: this.$route.params.skuid,
+          skuNum: this.skuNum,
+        });
+        // 进行路由跳转,push有历史记录，replace没有
+        // 简单数据用query,复杂数据用会话存储，vue是单页面，所以会话都没有关闭
+        // 会话存储不能存对象，一般是字符串，所以把skuInfo转化为字符串
+        sessionStorage.setItem("SKUINFO", JSON.stringify(this.skuInfo));
+        this.$router.push({
+          name: "addcartsuccess",
+          query: { skuNum: this.skuNum },
+        });
+      } catch (error) {
+        alert(error.message);
+      }
     },
   },
 };

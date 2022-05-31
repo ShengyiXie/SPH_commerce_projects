@@ -1,8 +1,12 @@
-import { reqGoodsInfo } from "@/api";
+import { reqGoodsInfo, reqAddOrUpdateShopCart } from "@/api";
+// 封装游客身份模块uuid-->生成随机字符串（不能再变了）
+import { getUUID } from '@/utils/uuid_token';
 // search模块的小仓库
 // state:仓库存储数据的地方
 const state = {
-    goodinfo: {}
+    goodinfo: {},
+    // 游客临时身份
+    uuid_token: getUUID()
 };
 // mutations:修改state的唯一手段
 const mutations = {
@@ -22,6 +26,21 @@ const actions = {
         if (result.code == 200) {
             commit("GETGOODINFO", result.data);
         }
+    },
+    // 将产品添加到购物车中,返回的是Promise
+    async addOrUpdateShopCart({ commit }, { skuId, skuNum }) {
+        // 服务器写入数据成功，不需要返回其他数据
+        // 带有async这样的函数返回的数据就是Promise函数，
+        // 所以这里返回ok或者Promise.reject，就是为了pages-detail中的方法addShopCar得到数据
+        let result = await reqAddOrUpdateShopCart(skuId, skuNum);
+        if (result.code == 200) {
+            // Promise如果返回的是String，则为成功
+            return 'ok'
+        } else {
+            // 如果返回的是Promise.reject，则为失败
+            return Promise.reject(new Error('faile'))
+        }
+
     }
 };
 // getters:计算属性，用于简化仓库数据，让组件操作数据更加方便

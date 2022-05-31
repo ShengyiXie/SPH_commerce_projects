@@ -1,11 +1,12 @@
 <template>
   <div class="spec-preview">
     <img :src="imgObj.imgUrl" />
-    <div class="event"></div>
+    <div class="event" @mousemove="handler"></div>
     <div class="big">
-      <img :src="imgObj.imgUrl" />
+      <img :src="imgObj.imgUrl" ref="big" />
     </div>
-    <div class="mask"></div>
+    <!-- 遮罩层 -->
+    <div class="mask" ref="mask"></div>
   </div>
 </template>
 
@@ -13,9 +14,39 @@
 export default {
   name: "Zoom",
   props: ["skuImageList"],
+  data() {
+    return {
+      currentIndex: 0,
+    };
+  },
   computed: {
     imgObj() {
-      return this.skuImageList[0] || {};
+      // 当computed中数据发生变化，页面也会跟着改变
+      return this.skuImageList[this.currentIndex] || {};
+    },
+  },
+  mounted() {
+    // 全局事件总线，获取imageList传递过来的索引值,全局事件总线也相当于绑定事件，放在mounted中
+    this.$bus.$on("getIndex", (index) => {
+      this.currentIndex = index;
+    });
+  },
+  methods: {
+    handler(event) {
+      let mask = this.$refs.mask;
+      let big = this.$refs.big;
+      // offsetX:鼠标到外面大框的距离，offsetWidth：内框的宽度
+      let left = event.offsetX - mask.offsetWidth / 2;
+      let top = event.offsetY - mask.offsetHeight / 2;
+      if (left <= 0) left = 0;
+      if (left >= mask.offsetWidth) left = mask.offsetWidth;
+      if (top <= 0) top = 0;
+      if (top >= mask.offsetHeight) top = mask.offsetHeight;
+      mask.style.left = left + "px";
+      mask.style.top = top + "px";
+      // 鼠标右移，实际图片左移
+      big.style.left = -2 * left + "px";
+      big.style.top = -2 * top + "px";
     },
   },
 };
