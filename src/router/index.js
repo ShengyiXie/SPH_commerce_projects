@@ -77,8 +77,15 @@ router.beforeEach(async (to, from, next) => {
 
         }
     } else {
-        // 未登录
-        next();
+        // 如果跳转去/trade|/pay|/center,则跳转到登录页面
+        let toPath = to.path;
+        // indexOf()从字符串开头去搜索传入的字符串，并返回位置（如果没找到，则返回 -1 ）
+        if (toPath.indexOf('/trade') != -1 || toPath.indexOf('/pay') != -1 || toPath.indexOf('/center') != -1) {
+            next('/login?redirect=' + toPath)
+        } else {
+            next();
+        }
+
     }
 
 

@@ -92,7 +92,9 @@ export default {
         phone &&
           password &&
           (await this.$store.dispatch("userLogin", { phone, password }));
-        this.$router.push("/home");
+        // 如果要跳转到结算页面得先登录，先把本来想要去的路径保存，如果有本来想要去的路径就跳转到本来要去的页面，不然就是首页
+        let toPath = this.$route.query.redirect||"/home"
+        this.$router.push(toPath);
       } catch (error) {
         alert(error.message);
       }

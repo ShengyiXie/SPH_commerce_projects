@@ -74,7 +74,7 @@
                   <div class="p-img">
                     <!-- 记得跳转的时候带参数id -->
                     <router-link :to="`/detail/${good.id}`">
-                      <img :src="good.defaultImg" />
+                      <img v-lazy="good.defaultImg" :key="good.defaultImg" />
                     </router-link>
                   </div>
                   <div class="price">

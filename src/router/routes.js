@@ -8,12 +8,72 @@ import Detail from '@/pages/Detail'
 import AddCartSuccess from '@/pages/AddCartSuccess'
 import ShopCart from '@/pages/ShopCart'
 import Trade from '@/pages/Trade'
+import Pay from '@/pages/Pay'
+import PaySuccess from '@/pages/PaySuccess'
+import Center from '@/pages/Center'
+// 二级路由
+import MyOrder from "@/pages/Center/myOrder";
+import GroupOrder from "@/pages/Center/groupOrder";
 export default [
+    {
+        path: "/center",
+        component: Center,
+        // 显示components-footer组件
+        meta: { show: true },
+        children: [
+            {
+                // path要么写全，要么不写/
+                path: '/center/myorder',
+                component: MyOrder
+            },
+            {
+                path: 'grouporder',
+                component: GroupOrder
+            },
+            {
+                // 重定向，一进来是/center重定向到/center/myorder
+                path: '/center',
+                redirect: '/center/myorder'
+            }
+
+
+        ]
+    },
+    {
+        path: "/paysuccess",
+        component: PaySuccess,
+        // 显示components-footer组件
+        meta: { show: true }
+    },
+    {
+        path: "/pay",
+        component: Pay,
+        // 显示components-footer组件
+        meta: { show: true },
+        // 路由独享守卫,只关心这个路由
+        beforeEnter: (to, from, next) => {
+            if (from.path == '/trade') {
+                next()
+            } else {
+                //false: 取消当前的导航。如果浏览器的 URL 改变了(可能是用户手动或者浏览器后退按钮)，那么 URL 地址会重置到 from 路由对应的地址    
+                next(false);
+            }
+        }
+    },
     {
         path: "/trade",
         component: Trade,
         // 显示components-footer组件
-        meta: { show: true }
+        meta: { show: true },
+        // 路由独享守卫,只关心这个路由
+        beforeEnter: (to, from, next) => {
+            if (from.path == '/shopcart') {
+                next()
+            } else {
+                //false: 取消当前的导航。如果浏览器的 URL 改变了(可能是用户手动或者浏览器后退按钮)，那么 URL 地址会重置到 from 路由对应的地址    
+                next(false);
+            }
+        }
     },
     {
         path: "/shopcart",

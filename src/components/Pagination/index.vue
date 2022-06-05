@@ -43,6 +43,7 @@
       :disabled="pageNo == totalPage"
       @click="$emit('getPageNo', pageNo + 1)"
     >
+      <!--$emit:子分页组件给父搜索页传递数据，用自定义时间，$emit传递当前点击第几页  -->
       下一页
     </button>
 
